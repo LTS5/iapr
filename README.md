@@ -24,7 +24,7 @@ Please find below the list of material accessible from this repository:
 1. [Installation instructions](#installation-instructions)
 1. [Basic image processing tutorial][t01]
 1. [Lab 1: image segmentation][l01]
-1. [Lab 2: object description][l02] (not available)
+1. [Lab 2: object description][l02]
 1. [Lab 3: classification][l03] (not available)
 1. [Project description][project-descr] (not available)
 
