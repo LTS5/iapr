@@ -32,7 +32,7 @@ Please find below the list of material accessible from this repository:
 [edu]: https://edu.epfl.ch/coursebook/en/image-analysis-and-pattern-recognition-EE-451
 [t01]: tutorial/tutorial.ipynb
 [l01]: labs/lab_01_segmentation.ipynb
-[l02]: labs/lab_02_object_description.ipynb
+[l02]: labs/lab_02_object_description_part1.ipynb
 [l03]: labs/lab_03_classification.ipynb
 [project-descr]: project/project_description.md
 
