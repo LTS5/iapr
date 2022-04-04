@@ -1,10 +1,13 @@
-
 # Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,linux,pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,linux,pycharm+all
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
+
+archive/
+data/lab-02-data/
+labs/res/
 
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
