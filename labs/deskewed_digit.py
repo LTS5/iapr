@@ -138,3 +138,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ref
+# https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_contours/py_contour_features/py_contour_features.html
+# https://github.com/rtharungowda/hcg/blob/2cc3125e120d3279bfe8daf89e16f28d38ac4767/segmentation.py
