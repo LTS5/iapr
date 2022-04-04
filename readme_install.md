@@ -1,17 +1,23 @@
-- Required packages
+# env installation
+
+## Required packages
 
 ```shell
 conda install -c conda-forge jupyter
 conda install -c conda-forge ipywidgets
-python -m pip install numpy scipy matplotlib
+python -m pip install numpy scipy matplotlib statsmodels
 jupyter nbextension enable --py widgetsnbextension
 # `python -m pip install --upgrade jupyter_client`
-python -m pip install -U scikit-imag>=0.19.1
+python -m pip install -U scikit-learn scikit-image
 python -m pip install webcolors opencv-python
 python -m pip install jupyterlab
+
+# to enable toc
+python -m pip install jupyter_contrib_nbextensions
+jupyter contrib nbextension install --user
 ```
 
-- ToC for notebook
+## ToC for notebook
 
     - install: https://github.com/ipython-contrib/jupyter_contrib_nbextensions
 
