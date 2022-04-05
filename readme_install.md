@@ -19,12 +19,12 @@ jupyter contrib nbextension install --user
 
 ## ToC for notebook
 
-    - install: https://github.com/ipython-contrib/jupyter_contrib_nbextensions
+- install: <https://github.com/ipython-contrib/jupyter_contrib_nbextensions>
 
-        ```shell
-        python -m pip install jupyter_contrib_nbextensions
-        # conda install -c conda-forge jupyter_contrib_nbextensions
-        jupyter contrib nbextension install --user
-        ```
+    ```shell
+    python -m pip install jupyter_contrib_nbextensions
+    # conda install -c conda-forge jupyter_contrib_nbextensions
+    jupyter contrib nbextension install --user
+    ```
 
-    - activate **Table of Contents (2)*
+- activate **Table of Contents (2)*

@@ -1,4 +1,26 @@
-# Image Analysis and Pattern Recognition
+# Image Analysis and Pattern Recognition (2022 Spring)
+
+## Overview
+
+### Members
+
+- [Ziyi ZHAO](https://github.com/Jacoo-Zhao)
+- [Yujie HE](https://github.com/hibetterheyj)
+- [Xufeng GAO](https://github.com/XufengGAO)
+
+### Main works
+
+- [Lab 1: image segmentation][l01_nbviewer] (Due: Friday, March 25, 2022)
+- [Lab 2: object description][l02_nbviewer] (Due: Friday, April 08, 2022)
+
+[l01_nbviewer]: https://nbviewer.org/github/XufengGAO/iapr/blob/master/labs/lab_01_segmentation.ipynb
+[l02_nbviewer]: https://nbviewer.org/github/XufengGAO/iapr/blob/master/labs/lab_02_object_description.ipynb
+
+### Misc
+
+- Environment installation for our notebooks: [readme_install.md](./readme_install.md)
+
+---
 
 ## General information
 * Lecturer: [Jean-Philippe Thiran][jpt]
@@ -25,7 +47,7 @@ Please find below the list of material accessible from this repository:
 1. [Basic image processing tutorial][t01]
 1. [Lab 1: image segmentation][l01]
 1. [Lab 2: object description][l02]
-1. [Lab 3: classification][l03] 
+1. [Lab 3: classification][l03]
 1. [Project][project-descr]
 
 [epfl]: https://www.epfl.ch/
@@ -70,7 +92,7 @@ for the course:
    * Linux/macOS: `pip install --upgrade -r requirements.txt`
    * Windows: `conda install --file requirements.txt`
 1. You can deactivate the environment whenever you are done with `deactivate`
-   
+
 [git]: https://git-scm.com
 [python]: https://www.python.org
 [scipy]: https://www.scipy.org
