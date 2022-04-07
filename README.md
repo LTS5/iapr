@@ -12,9 +12,11 @@
 
 - [Lab 1: image segmentation][l01_nbviewer] (Due: Friday, March 25, 2022)
 - [Lab 2: object description][l02_nbviewer] (Due: Friday, April 08, 2022)
+- [Lab 3: classification][l03_nbviewer] (Due: Mon, April 25, 2022)
 
 [l01_nbviewer]: https://nbviewer.org/github/XufengGAO/iapr/blob/master/labs/lab_01_segmentation.ipynb
 [l02_nbviewer]: https://nbviewer.org/github/XufengGAO/iapr/blob/master/labs/lab_02_object_description.ipynb
+[l03_nbviewer]: https://nbviewer.org/github/XufengGAO/iapr/blob/master/labs/lab_03_classification.ipynb
 
 ### Misc
 
