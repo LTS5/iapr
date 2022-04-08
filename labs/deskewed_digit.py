@@ -54,18 +54,19 @@ def deskewed_img(src_path, digit, index):
         print("Angle along the longer side:", str(rect[-1] + 180))
         act_angle = angle + 180
         # act_angle_ell = angle_ell + 180
-        print("Angle along the longer side (ell):", str(angle_ell + 180))
+        # print("Angle along the longer side (ell):", str(angle_ell + 180))
     else:
         print("Angle along the longer side:", str(rect[-1] + 90))
         act_angle = angle + 90
         # act_angle_ell = angle_ell + 90
-        print("Angle along the longer side (ell):", str(angle_ell + 90))
+        # print("Angle along the longer side (ell):", str(angle_ell + 90))
     # act_angle gives the angle with bounding box
 
-    if angle_ell < 90:
-        angle_ell = angle_ell
-    else:
-        angle_ell = angle_ell - 180
+    if cnt.shape[0] > 5:
+        if angle_ell < 90:
+            angle_ell = angle_ell
+        else:
+            angle_ell = angle_ell - 180
 
     if act_angle < 90:
         angle = 90 + angle
@@ -82,15 +83,17 @@ def deskewed_img(src_path, digit, index):
     # rotate the image to deskew it
     (h, w) = image.shape[:2]
     center = (w // 2, h // 2)
-    print(angle, angle_ell)
+    if cnt.shape[0] > 5:
+        print(angle, angle_ell)
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    M_ell = cv2.getRotationMatrix2D(center, angle_ell, 1.0)
     rotated = cv2.warpAffine(
         image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
     )
-    rotated_ell = cv2.warpAffine(
-        image, M_ell, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
-    )
+    if cnt.shape[0] > 5:
+        M_ell = cv2.getRotationMatrix2D(center, angle_ell, 1.0)
+        rotated_ell = cv2.warpAffine(
+            image, M_ell, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
+        )
 
     box = cv2.boxPoints(rect)
     # print(box)
@@ -116,28 +119,36 @@ def deskewed_img(src_path, digit, index):
     cv2.imwrite('./res/{}_{}.png'.format(digit, index), image)
     cv2.imwrite('./res/{}_{}_contour.png'.format(digit, index), contour)
     cv2.imwrite('./res/{}_{}_rotated.png'.format(digit, index), rotated)
-    cv2.imwrite('./res/{}_{}_rotated_ell.png'.format(digit, index), rotated_ell)
-
-
-src_path = '/home/he/projects/iapr/data/lab-02-data/part1/'
+    if cnt.shape[0] > 5:
+        cv2.imwrite('./res/{}_{}_rotated_ell.png'.format(digit, index), rotated_ell)
 
 
 def naive():
     digit = 0  # 0 | 1
     index = 3  # 0 - 9
+    src_path = '/home/he/projects/iapr/data/lab-02-data/part1/'
     deskewed_img(src_path, digit, index)
 
 
 def main():
     digit = 0  # 0 | 1
     index = 3  # 0 - 9
+    src_path = '/home/he/projects/iapr/data/lab-02-data/part1/'
     for digit in [0, 1]:
         for index in range(0, 10):
             deskewed_img(src_path, digit, index)
 
 
+def main23():
+    src_path = '/home/he/projects/iapr/data/lab-02-data/part2/'
+    for digit in [2, 3]:
+        for index in range(0, 10):
+            deskewed_img(src_path, digit, index)
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    main23()
 
 # ref
 # https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_contours/py_contour_features/py_contour_features.html
