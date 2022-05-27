@@ -261,3 +261,8 @@ dmypy.json
 .prof
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,linux,pycharm+all
+
+
+
+# project data 2022 Spring
+project/data
