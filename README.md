@@ -25,9 +25,6 @@ Please find below the list of material accessible from this repository:
 1. [Basic image processing tutorial][t01]
 1. [Lab 1: image segmentation][l01]
 
-#1. [Lab 2: object description][l02]
-#1. [Lab 3: classification][l03] 
-#1. [Project][project-descr]
 
 [epfl]: https://www.epfl.ch/
 [edu]: https://edu.epfl.ch/coursebook/en/image-analysis-and-pattern-recognition-EE-451
