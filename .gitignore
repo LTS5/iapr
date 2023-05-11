@@ -261,4 +261,6 @@ dmypy.json
 
 
 exam
-project/data
+project/data_project
+project/git.txt
+project/__pycache__

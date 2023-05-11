@@ -1,0 +1,2 @@
+def segment():
+    print('Hello!')
