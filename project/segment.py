@@ -102,46 +102,51 @@ def segment_by_hist(image, plot_segmentation=False):
     # data[:, :, :3] = image.copy()
     # data[:, :, 3] = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     data = np.dstack((image, cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)))
-    print(f'{data.shape = }')
+    low_thresh, high_thresh = [], []
 
     hists = [np.histogram(data[:,:,i].ravel(), bins=255, range=(0,255))[0] for i in range(4)]
     # hists.append(np.histogram(gray.ravel(), bins=255)[0])
-    print('ok1')
     for idx, hist in enumerate(hists):
         peak = np.argmax(hist)
-        print('ok2')
         # peak_b, props_b = find_peaks(hist_b)
-        _, left_base, right_base = peak_prominences(hist, [peak])
-        print('ok3')
+        _, left_base, right_base = peak_prominences(hist, [peak], wlen=100)
+        low_thresh.append(left_base[0])
+        high_thresh.append(right_base[0])
         
         if plot_segmentation:
-            print('ok4')
-            axs[idx].hist(data[:, :, idx], bins=255)
-            print('ok5')
+            axs[idx].hist(data[:, :, idx].ravel(), bins=255)
             axs[idx].axvline(left_base[0], color='r')
-            print('ok6')
             axs[idx].axvline(right_base[0], color='g')
-            print('ok7')
             axs[idx].axvline(peak, color='k')
-            print('ok8')
-            # axs[idx].set_xticks([]); axs[idx].set_yticks([])
+            axs[idx].set_xticks([]); axs[idx].set_yticks([])
 
+    # Threshold to binary images
+    segmented_images = []
+    for i in range(4):
+        img = data[:, :, i]
+        img[img < low_thresh[i]] = 0
+        img[img > high_thresh[i]] = 0
+        segmented_images.append(img.astype(bool).astype(np.uint8)) # +0 to convert to int 0 and 1 matrix
+
+    # Plot binary images
     if plot_segmentation:
         plt.show()
 
-    return
+        fig, axs = plt.subplots(1, 4)
+        for i in range(len(segmented_images)):
+            axs[i].imshow(segmented_images[i])
+            axs[i].set_xticks([]); axs[i].set_yticks([])
+        plt.show()
+    
+    # Find contours
+    all_contours = []
+    for i in range(len(segmented_images)):
+        contours = cv2.findContours(segmented_images[i], cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        contours = contours[0] if len(contours) == 2 else contours[1]
 
-    fig, axs = plt.subplots(1, 4)
-    for i in range(3):
-        img = image[:, :, i]
-        thresh_new = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-        axs[i].imshow(thresh_new)
+        all_contours += contours
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    thresh_new = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-    axs[3].imshow(thresh_new)
-
-    plt.show()
+    return all_contours
 
 def filter_contours(contours):
     good_boxes = []
@@ -179,8 +184,8 @@ def segment(image, plot_results=False):
     # Try hue, saturation, value channels
 
     # Get contours from all methods
-    # all_contours = segment_by_channels(image, plot_segmentation=True)
-    all_contours = segment_by_hist(image, plot_segmentation=True)
+    all_contours = segment_by_channels(image)
+    all_contours += segment_by_hist(image)
 
     # Filter out by shape, size and duplicates
     boxes = filter_contours(all_contours)
@@ -208,9 +213,9 @@ if __name__ == '__main__':
         filename = "train_{}.png".format(str(image_index).zfill(2))
         return np.array(Image.open(os.path.join(path,folder,filename)).convert('RGB'))
 
-    # for i in range(12):
-    #     test_image = load_input_image(i)
-    #     puzzle_boxes = segment(test_image)
+    for i in range(12):
+        test_image = load_input_image(i)
+        puzzle_boxes = segment(test_image, plot_results=True)
 
-    test_image = load_input_image(2)
-    puzzle_boxes = segment(test_image, plot_results=True)
+    # test_image = load_input_image(2)
+    # puzzle_boxes = segment(test_image, plot_results=True)
