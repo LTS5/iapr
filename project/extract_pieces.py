@@ -374,6 +374,7 @@ if __name__ == '__main__':
         filename = "train_{}.png".format(str(image_index).zfill(2))
         return np.array(Image.open(os.path.join(path,folder,filename)).convert('RGB'))
 
+    # Test all
     num_pieces = []
     import time
     t1 = time.time()
@@ -386,5 +387,6 @@ if __name__ == '__main__':
     answers = np.array([28, 21, 28, 21, 20, 28, 29, 28, 27, 29, 28, 19])
     print(np.array(num_pieces) - answers)
 
+    # Test one image
     # test_image = load_input_image(2)
     # puzzle_boxes = find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=False)
