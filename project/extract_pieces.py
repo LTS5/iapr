@@ -98,6 +98,11 @@ def segment_by_laplacian(image, plot_segmentation=False):
     if plot_segmentation:
         print('Plots from: segment_by_laplacian')
         fig, axs = plt.subplots(1, 4, figsize=(40,10))
+        for i in range(len(laplacians)):
+            axs[i].imshow(np.abs(laplacians[i]))
+            axs[i].set_xticks([]); axs[i].set_yticks([])
+        plt.show()
+        fig, axs = plt.subplots(1, 4, figsize=(40,10))
         for i in range(len(segmented_images)):
             axs[i].imshow(segmented_images[i])
             axs[i].set_xticks([]); axs[i].set_yticks([])
@@ -301,7 +306,7 @@ def extract_pieces(image, boxes, plot_intermediate=False):
     Returns: 
         [[128, 128, 3], ...] - Extracted puzzle piece
     """
-    return [extract_piece(image, box, plot_intermediate) for box in boxes]
+    return np.array([extract_piece(image, box, plot_intermediate) for box in boxes])
 
 def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False):
     """
@@ -376,17 +381,26 @@ if __name__ == '__main__':
 
     # Test all
     num_pieces = []
-    import time
-    t1 = time.time()
-    for i in range(12):
-        test_image = load_input_image(i)
-        num_pieces.append(len(find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=False)))
-    t2 = time.time()
-    print(f'Time: {t2 - t1}')
+    # import time
+    # t1 = time.time()
+    # for i in range(12):
+    #     test_image = load_input_image(i)
+    #     num_pieces.append(len(find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=False)))
+    # t2 = time.time()
+    # print(f'Time: {t2 - t1}')
 
-    answers = np.array([28, 21, 28, 21, 20, 28, 29, 28, 27, 29, 28, 19])
-    print(np.array(num_pieces) - answers)
+    # answers = np.array([28, 21, 28, 21, 20, 28, 29, 28, 27, 29, 28, 19])
+    # print(np.array(num_pieces) - answers)
 
     # Test one image
-    # test_image = load_input_image(2)
-    # puzzle_boxes = find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=False)
+    test_image = load_input_image(2)
+    puzzle_boxes = find_puzzle_pieces(test_image, plot_results=False, plot_intermediate=False)
+
+    assign = np.array([np.random.randint(0,5) for _ in range(puzzle_boxes.shape[0])])
+    assign = np.array([np.random.randint(0,5) for _ in range(puzzle_boxes.shape[0])])
+
+    print(f'{puzzle_boxes.shape = }')
+    print(f'{assign = }')
+    print(f'{np.argwhere(assign==2).ravel() = }')
+    print(f'{puzzle_boxes[np.argwhere(assign==2).ravel()].shape = }')
+    print(f'{puzzle_boxes[np.array([2])].shape = }')
