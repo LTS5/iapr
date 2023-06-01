@@ -28,6 +28,7 @@ def solve_jigsaw_puzzle(puzzle_pieces, puzzle_assignments):
         print('Cluster')
 
         # Try to solve
+        failed = False
         try:
             solved = merge_puzzles(cluster_pieces)
             print('Solved with jigsaw')
@@ -43,10 +44,16 @@ def solve_jigsaw_puzzle(puzzle_pieces, puzzle_assignments):
                 solved = concat_images(cluster_pieces, (4,4), idxs)
             else:
                 print(f'Wrong number of puzzle pieces: {len(cluster_pieces)}')
+
+                for piece in cluster_pieces:
+                    outlier_images.append(piece)
+
+                failed = True
         
             print('Solved random')
 
-        solved_puzzles.append(solved)
+        if not failed:
+            solved_puzzles.append(solved)
 
     return solved_puzzles, outlier_images
 
