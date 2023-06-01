@@ -328,7 +328,6 @@ def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False, save_
     full_segmented = np.array(segmented_images_laplacian).sum(axis=0).astype(np.int0)
 
     # Get contours from segmented image
-    # all_contours = find_contours(segmented_images_laplacian)
     all_contours = find_contours([full_segmented.astype(np.uint8)])
 
     # Filter out by shape, size and duplicates
