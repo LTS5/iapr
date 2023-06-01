@@ -266,3 +266,4 @@ project/data_project_old
 project/ignore
 project/git.txt
 project/__pycache__
+project/segmentation_data
