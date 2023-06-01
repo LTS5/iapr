@@ -1,6 +1,10 @@
 ###
 import numpy as np 
 import matplotlib.pyplot as plt
+# from rich import print
+# from rich.progress import track
+# from rich.console import Console
+# from icecream import ic
 import os
 ###
 from PIL import Image
@@ -119,7 +123,6 @@ def save_solved_puzzles(image_index , solution, saving_path):
         sol = np.array(sol , dtype = np.uint8)
         filename = os.path.join(saving_path, f"solved_puzzle_{str(image_index).zfill(2)}_{str(i).zfill(2)}.png")
         Image.fromarray(sol).save(filename)
-
 
 
 
