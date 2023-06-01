@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from feature_reduction import *
 from skimage.filters import gabor_kernel
+from scipy import ndimage as ndi
 
 def histogram_features(piece_image, C = 3):
     """
@@ -68,12 +69,37 @@ def gabor_features(piece_image):
 
     # Good code for using gabor filter here https://scikit-image.org/docs/stable/auto_examples/features_detection/plot_gabor.html
 
+    # prepare filter bank kernels
 
-    gabor_features = []
+    kernels = []
+    sigmas = [1,3] # List of standard deviation of the gaussian envelope
+    frequencies = [0.05, 0.25] # List of frequency
 
+    angles = 4 # Number of different angles evaluated in the Gabor filter
 
+    for theta in range(angles):
+        theta = theta / angles * np.pi
+        for sigma in sigmas:
+            for frequency in frequencies:
+                kernel = np.real(gabor_kernel(frequency, theta=theta,
+                                            sigma_x=sigma, sigma_y=sigma))
+                kernels.append(kernel)
+    
+    gabor_features = [] # List with all features
 
-    return gabor_features
+    for i in range(len(norm_piece[0][0])): # Iterate through channels, here we set it to 3 (RGB)
+
+        feats = np.zeros((len(kernels), 2), dtype=np.double) # Features for single channel
+
+        for k, kernel in enumerate(kernels): # Iterate through kernels
+
+            filtered = ndi.convolve(norm_piece[:,:,i], kernel, mode='wrap') # Convolved image
+            feats[k, 0] = filtered.mean() # Mean of convolved image
+            feats[k, 1] = filtered.var() # Variance of convolved image
+
+        gabor_features.append(feats) # Append these features to the total
+
+    return np.concatenate(gabor_features).ravel().tolist() # Converting the feature vector to a 2D list
 
 
 def normalize_features(features_all):
