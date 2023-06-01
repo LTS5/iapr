@@ -9,7 +9,7 @@ import os
 ###
 from PIL import Image
 
-def export_solutions(image_index , solutions , path = "data_project"  , group_id = "00"):
+def export_solutions(image_index, solutions, path = "data_project", group_id = "00"):
     """
     Wrapper funciton to load image and save solution
 
@@ -79,7 +79,7 @@ def save_mask(image_index , solution, saving_path):
         solution = solution*255
     solution = np.array(solution , dtype = np.uint8)
     Image.fromarray(solution).save(filename)
-1
+
 def save_feature_map(image_index , solution, saving_path):
     filename = os.path.join(saving_path, f"feature_map_{str(image_index).zfill(2)}.txt")
     np.savetxt(filename , solution)
@@ -126,25 +126,23 @@ def save_solved_puzzles(image_index , solution, saving_path):
 
 
 
+if __name__ == '__main__':
+    #example of how to use the function
 
-#%%
+    ## random data
+    mask = np.random.randint(0,2,(2000,2000))
+    feature_map = np.random.rand(30, 200)
+    cluster = [[np.zeros((128,128,3)) + np.random.randint(i*100 , (i+1)*80, size=3) for _ in range(np.random.randint(10,20))] for i in range(3)]
 
-#example of how to use the function
+    ## append the outliers too!
+    outliers =[np.zeros((128,128,3)) + np.random.randint(0,254 , size =3 ) for _ in range(3)]
+    cluster.append(outliers)
 
-## random data
-mask = np.random.randint(0,2,(2000,2000))
-feature_map = np.random.rand(30, 200)
-cluster = [[np.zeros((128,128,3)) + np.random.randint(i*100 , (i+1)*80, size=3) for _ in range(np.random.randint(10,20))] for i in range(3)]
+    solved_puzzle = [np.zeros((128*3,128*4,3)) + np.random.randint(0,254, size=3) for _ in range(3)]
 
-## append the outliers too!
-outliers =[np.zeros((128,128,3)) + np.random.randint(0,254 , size =3 ) for _ in range(3)]
-cluster.append(outliers)
+    solution = [mask, feature_map, cluster, solved_puzzle]
 
-solved_puzzle = [np.zeros((128*3,128*4,3)) + np.random.randint(0,254, size=3) for _ in range(3)]
-
-solution = [mask, feature_map, cluster, solved_puzzle]
-
-#saving solution for image 1
-export_solutions(1,  solution, path = "data_project", group_id = "00")
+    #saving solution for image 1
+    export_solutions(1,  solution, path = "data_project", group_id = "00")
 
 

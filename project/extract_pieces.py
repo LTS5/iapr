@@ -98,6 +98,11 @@ def segment_by_laplacian(image, plot_segmentation=False):
     if plot_segmentation:
         print('Plots from: segment_by_laplacian')
         fig, axs = plt.subplots(1, 4, figsize=(40,10))
+        for i in range(len(laplacians)):
+            axs[i].imshow(np.abs(laplacians[i]))
+            axs[i].set_xticks([]); axs[i].set_yticks([])
+        plt.show()
+        fig, axs = plt.subplots(1, 4, figsize=(40,10))
         for i in range(len(segmented_images)):
             axs[i].imshow(segmented_images[i])
             axs[i].set_xticks([]); axs[i].set_yticks([])
@@ -268,7 +273,8 @@ def extract_piece(image, box, plot_intermediate=False):
     piece = image_rotated[pad_y:pad_y+puzzle_piece_size, pad_x:pad_x+puzzle_piece_size]
 
     # Plot
-    if plot_intermediate:
+    # if plot_intermediate:
+    if False:
         print('Plots from: extract_piece')
         _, axs = plt.subplots(1, 3, figsize=(30,10))
 
@@ -301,9 +307,9 @@ def extract_pieces(image, boxes, plot_intermediate=False):
     Returns: 
         [[128, 128, 3], ...] - Extracted puzzle piece
     """
-    return [extract_piece(image, box, plot_intermediate) for box in boxes]
+    return np.array([extract_piece(image, box, plot_intermediate) for box in boxes])
 
-def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False):
+def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False, save_idx=-1):
     """
     Extract individual puzzle pieces from image
     
@@ -314,13 +320,16 @@ def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False):
 
     Returns: 
         puzzle_pieces: [[128, 128, 3], ...] - Extracted puzzle pieces
+        full_segmented: [width, height] binary segmented mask
     """
     
     # Segment image by laplacian method
     segmented_images_laplacian = segment_by_laplacian(image, plot_segmentation=plot_intermediate)
+    full_segmented = np.array(segmented_images_laplacian).sum(axis=0).astype(np.int0)
 
     # Get contours from segmented image
-    all_contours = find_contours(segmented_images_laplacian)
+    # all_contours = find_contours(segmented_images_laplacian)
+    all_contours = find_contours([full_segmented.astype(np.uint8)])
 
     # Filter out by shape, size and duplicates
     boxes = filter_contours(all_contours)
@@ -334,7 +343,7 @@ def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False):
     # Plot results
     if plot_results:
         # Plot image with boxes
-        fig, axs = plt.subplots(1, 2)
+        fig_boxes, axs = plt.subplots(1, 2)
         plt.title(f'Number of boxes: {len(boxes)}')
         axs[0].imshow(image); axs[0].set_xticks([]); axs[0].set_yticks([])
         axs[1].imshow(image); axs[1].set_xticks([]); axs[1].set_yticks([])
@@ -349,7 +358,7 @@ def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False):
         plt.show()
 
         # Plot extracted puzzle pieces
-        fig, axs = plt.subplots((len(puzzle_pieces)+9) // 10, 10, figsize=(30,10))
+        fig_pieces, axs = plt.subplots((len(puzzle_pieces)+9) // 10, 10, figsize=(30,10))
         plt.suptitle(f'Extracted peices: {len(puzzle_pieces)}', fontsize=60)
         axs = axs.ravel()
 
@@ -366,8 +375,37 @@ def find_puzzle_pieces(image, plot_results=False, plot_intermediate=False):
         plt.tight_layout()
         plt.show()
 
-    # Return extracted puzzle pieces
-    return puzzle_pieces
+    if save_idx >= 0:
+        
+        fig_size = (7, 15)
+        fig_full = plt.figure(figsize=(10, 5))
+
+        # Original
+        ax = plt.subplot(*fig_size, (1,65))
+        ax.imshow(image); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f'Image {save_idx}')
+
+        # Mask
+        ax = plt.subplot(*fig_size, (6,70))
+        ax.imshow(full_segmented); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title('Mask')
+
+        # Boxes
+        ax = plt.subplot(*fig_size, (11,75))
+        ax.imshow(image); ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f'Extracted peices: {len(puzzle_pieces)}')#, fontsize=60)
+        for box in boxes:
+            ax.plot(np.append(box[:, 0], box[0, 0]), np.append(box[:, 1], box[0, 1]), color='r')
+
+        for idx, piece in enumerate(puzzle_pieces): 
+            ax = plt.subplot(*fig_size, 76+idx)
+            ax.imshow(piece); ax.set_xticks([]); ax.set_yticks([])
+
+        fig_full.savefig(f"segmentation_data/output_img_{save_idx}.pdf")
+        plt.close()
+
+    # Return extracted puzzle pieces and mask
+    return puzzle_pieces, full_segmented
 
 if __name__ == '__main__':
     def load_input_image(image_index, folder="train", path="data_project"):
@@ -375,18 +413,27 @@ if __name__ == '__main__':
         return np.array(Image.open(os.path.join(path,folder,filename)).convert('RGB'))
 
     # Test all
-    num_pieces = []
-    import time
-    t1 = time.time()
-    for i in range(12):
-        test_image = load_input_image(i)
-        num_pieces.append(len(find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=False)))
-    t2 = time.time()
-    print(f'Time: {t2 - t1}')
+    # num_pieces = []
+    # import time
+    # t1 = time.time()
+    # for i in range(12):
+    #     test_image = load_input_image(i)
+    #     num_pieces.append(len(find_puzzle_pieces(test_image, plot_results=False, plot_intermediate=False, save_idx=i)[0]))
+    # t2 = time.time()
+    # print(f'Time: {t2 - t1}')
 
-    answers = np.array([28, 21, 28, 21, 20, 28, 29, 28, 27, 29, 28, 19])
-    print(np.array(num_pieces) - answers)
+    # answers = np.array([28, 21, 28, 21, 20, 28, 29, 28, 27, 29, 28, 19])
+    # print(np.array(num_pieces) - answers)
 
     # Test one image
-    # test_image = load_input_image(2)
-    # puzzle_boxes = find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=False)
+    test_image = load_input_image(2)
+    puzzle_boxes = find_puzzle_pieces(test_image, plot_results=False, plot_intermediate=False)
+
+    # assign = np.array([np.random.randint(0,5) for _ in range(puzzle_boxes.shape[0])])
+    # assign = np.array([np.random.randint(0,5) for _ in range(puzzle_boxes.shape[0])])
+
+    # print(f'{puzzle_boxes.shape = }')
+    # print(f'{assign = }')
+    # print(f'{np.argwhere(assign==2).ravel() = }')
+    # print(f'{puzzle_boxes[np.argwhere(assign==2).ravel()].shape = }')
+    # print(f'{puzzle_boxes[np.array([2])].shape = }')
