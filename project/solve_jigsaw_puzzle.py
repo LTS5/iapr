@@ -20,28 +20,93 @@ def solve_jigsaw_puzzle(puzzle_pieces, puzzle_assignments):
         
         # Len = 1 = outlier
         if cluster_pieces.shape[0] == 1:
+            print('Outlier')
             outlier_images.append(cluster_pieces[0])
             continue # Next piece
 
         # Else merge puzzles together
-        solved_puzzles.append(merge_puzzles(cluster_pieces))
+        print('Cluster')
+
+        # Try to solve
+        try:
+            solved = merge_puzzles(cluster_pieces)
+            print('Solved with jigsaw')
+        except:
+            # If not able to solve -> Return random
+            idxs = list(range(len(cluster_pieces)))
+
+            if len(cluster_pieces) == 9:
+                solved = concat_images(puzzle_pieces, (3,3), idxs)
+            elif len(cluster_pieces) == 12:
+                solved = concat_images(puzzle_pieces, (3,4), idxs)
+            elif len(cluster_pieces) == 16:
+                solved = concat_images(puzzle_pieces, (4,4), idxs)
+            else:
+                print(f'Wrong number of puzzle pieces: {len(puzzle_pieces)}')
+        
+            print('Solved random')
+            
+        solved_puzzles.append(solved)
 
     return solved_puzzles, outlier_images
 
 def merge_puzzles(puzzle_pieces):
-    # res = edge_overlaps(all_pieces, 0)
+    # TODO
+    # Add check for open sides with length from middle piece max 4
+    # Add threshold or max among all free edges
 
-    # print(f'{res = }')
 
+
+    pieces = puzzle_pieces.copy()
     # [0, 1, 2, 3] = [top, right, bottom, left]
 
-    index_grid = np.zeros((4,4))
-
+    # Grid to place pieces
+    # 7x7 to ensure 4x4 fits when starting in the middle
+    index_grid = np.zeros((7,7))-1
+    
     # Start with one puzzle
+    cur_idx_in_placed_piece = -1
+    index_grid[3,3] = 0
+    placed_pieces = [0]
+
+    # Do until all pieces are placed
+    i = 0
+    while len(placed_pieces) < puzzle_pieces.shape[0] and i < 99999: 
+        i += 1
+
+        # Update index in placed piece focused on
+        cur_idx_in_placed_piece = (cur_idx_in_placed_piece+1) % len(placed_pieces)
+
+        # Set real index
+        cur_idx = placed_pieces[cur_idx_in_placed_piece]
+
+        # Check open sides around current piece
+        open_sides = open_sides_around(index_grid, cur_idx)
+
+        # No open sides around, go to next placed piece
+        if len(open_sides) == 0:
+            continue
+
+        # Get the most matching edge from all remaining pieces
+        # This checks the current piece against all non-placed piece sides
+        piece2_index, piece2_side, focus_piece_side = max_edge_overlap(pieces, cur_idx, sides=open_sides)
+
+        # Insert new piece to grid and rotate it inplace in "pieces"
+        insert_piece_to_grid(index_grid, pieces, piece2_index, piece2_side, cur_idx, focus_piece_side)
+
+        # Append newly placed piece
+        placed_pieces.append(piece2_index)
+
+    # Get indices
+    piece_idxs = index_grid[index_grid != -1]
+
+    # Get shape
+    index_grid_bool = np.where(index_grid != -1)
+    shape = (index_grid_bool[1].max()-index_grid_bool[1].min(), 
+             index_grid_bool[0].max()-index_grid_bool[0].min())
 
 
-    idxs = list(range(12))
-    return concat_images(puzzle_pieces, (3,3), idxs)
+    return concat_images(pieces, shape, piece_idxs)
 
 
 def concat_images(pieces, grid_size, piece_idxs):
@@ -75,26 +140,31 @@ def get_start_stop(piece_idx, grid_size):
         return x_start*128, x_end, y_start*128, y_end
         
 
-def max_edge_overlap(pieces, focus_idx, remove_idx):
+def max_edge_overlap(pieces, focus_idx, remove_idx=None, sides=[0,1,2,3]):
     """Compute overlap of all edges in two pieces
 
     Args:
-        piece1 (_type_): _description_
-        piece2 (_type_): _description_
+        pieces:
+        focus_idx: int -
+        remove_idx: list
+        sides:
 
     Returns:
-        _type_: _description_
+        index, piece2_side, focus_piece_side, 
     """
 
     focus_piece = pieces[focus_idx]
 
-    dont_check_indices = remove_idx.append(focus_idx)
+    if remove_idx is None:
+        dont_check_indices = [focus_idx]
+    else:
+        dont_check_indices = remove_idx + [focus_idx]
 
     compare_indices = [i for i in range(pieces.shape[0]) if i not in dont_check_indices]
     compare_pieces = pieces[compare_indices]
 
     overlaps = []
-    for i in range(4):
+    for i in sides:
         overlaps.append(
             one_edge_overlap(np.rot90(focus_piece, i)[:,:2,:], compare_pieces)
         )
@@ -103,7 +173,7 @@ def max_edge_overlap(pieces, focus_idx, remove_idx):
     max_idx = np.array(overlaps)[:,2].argmax()
     real_idx = compare_indices[max_idx]
 
-    return real_idx, overlaps[max_idx][1]
+    return real_idx, overlaps[max_idx][1], sides[max_idx]
 
 
 def one_edge_overlap(edge, pieces):
@@ -134,6 +204,63 @@ def one_edge_overlap(edge, pieces):
     return max_overlap_idx, max_overlap_rot, max_overlap_val
 
 
+def insert_piece_to_grid(grid, pieces, piece2_idx, piece2_side, focus_piece_idx, focus_piece_side):
+    """
+    Insert new piece into index grid and rotate new piece. Done inplace
+    """
+    # Get coordinates of focus_piece in grid
+    focus_coords = np.where(grid == focus_piece_idx)
+    focus_coords = (focus_coords[0][0], focus_coords[1][0])
+
+    # Insert new index into grid and rotate piece2 to match focus_piece
+    if focus_piece_side == 0: # Top
+        grid[focus_coords[0]-1, focus_coords[1]] = piece2_idx
+        rotate_piece_inplace(pieces, piece2_idx, (piece2_side+2)%4)
+
+    elif focus_piece_side == 1: # Right
+        grid[focus_coords[0], focus_coords[1]+1] = piece2_idx
+        rotate_piece_inplace(pieces, piece2_idx, (piece2_side+1)%4)
+
+    elif focus_piece_side == 2: # Bottom
+        grid[focus_coords[0]+1, focus_coords[1]] = piece2_idx
+        rotate_piece_inplace(pieces, piece2_idx, piece2_side)
+
+    elif focus_piece_side == 3: # Left
+        grid[focus_coords[0], focus_coords[1]-1] = piece2_idx
+        rotate_piece_inplace(pieces, piece2_idx, (piece2_side+3)%4)  
+
+def rotate_piece_inplace(pieces, index, rot):
+    pieces[index] = np.rot90(pieces[index], rot)
+
+def open_sides_around(grid, focus_index):
+    """
+    Return sides which are not accupied around index
+    """
+    focus_coords = np.where(grid == focus_index)
+    focus_coords = (focus_coords[0][0], focus_coords[1][0])
+
+    open_sides = []
+
+    # Top
+    if grid[focus_coords[0]-1, focus_coords[1]] == -1:
+        open_sides.append(0)
+
+    # Right
+    if grid[focus_coords[0], focus_coords[1]+1] == -1:
+        open_sides.append(1)
+
+    # Bottom
+    if grid[focus_coords[0]+1, focus_coords[1]] == -1:
+        open_sides.append(2)
+
+    # Left
+    if grid[focus_coords[0], focus_coords[1]-1] == -1:
+        open_sides.append(3)
+
+    return open_sides
+
+def grid_to_index_array(grid):
+    grid[grid != -1]
 
 if __name__=='__main__':
     from extract_pieces import *
