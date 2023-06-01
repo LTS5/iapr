@@ -107,7 +107,7 @@ def _merge_clusters(cluster_centers, dist_thres, max_merged, min_clusters):
         if len(merged_centers)/2 >= max_merged:
             break
         # Check if the minimal amount of centers are reached
-        if new_cluster_centers.shape[0] <=min_clusters:
+        if new_cluster_centers.shape[0] <= min_clusters:
             break
 
         # Check if center already merged
@@ -234,6 +234,7 @@ def Kmeans_ISODATA(data, K_init, std_thres, dist_thres, max_iter = 100, max_merg
 
     Output:
     cluster assignments: (Nx1) array of which center the sample is assigned
+    cluster_centers: (KxD) array of the position of the centers
     """
 
     K = K_init
@@ -263,7 +264,7 @@ def Kmeans_ISODATA(data, K_init, std_thres, dist_thres, max_iter = 100, max_merg
 
         # If some centers where merged, update the assignments and clusters once
         # This is done because we want new cluster assignments before splitting
-        if np.all(merge_cluster_centers != cluster_centers):
+        if merge_cluster_centers.shape[0] != cluster_centers.shape[0]:
             # Calculate the distance from each datapoint to all cluster centers
             distances = _compute_distance(data, merge_cluster_centers)
             #  Update K

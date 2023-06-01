@@ -73,7 +73,7 @@ def gabor_features(piece_image):
 
     kernels = []
     sigmas = [1,3] # List of standard deviation of the gaussian envelope
-    frequencies = [0.05, 0.25] # List of frequency
+    frequencies = [0.05, 0.25, 0.5] # List of frequency
 
     angles = 4 # Number of different angles evaluated in the Gabor filter
 
@@ -154,16 +154,16 @@ def extract_features(pieces_list, use_pca = False, d = 3):
         features_all.append(piece_features)
     
     features_all = np.array(features_all)
-    print(f'Shape of features: {features_all.shape}')
+    # print(f'Shape of features: {features_all.shape}')
 
     # Normalize the features for unbiased clustering/feature reduction
     features_all = normalize_features(features_all)
 
     # Apply PCA if wanted
     if use_pca:
-        print(f'Dimension of features before feature dimension reduction: {features_all.shape}')
+        # print(f'Dimension of features before feature dimension reduction: {features_all.shape}')
         features_all, exvar = PCA(features_all, d)
-        print(f'Dimension of features after feature dimension reduction: {features_all.shape}')
-        print(f'The total variance explained by the first {d} principal components is {exvar:.3f} %')
+        # print(f'Dimension of features after feature dimension reduction: {features_all.shape}')
+        # print(f'The total variance explained by the first {d} principal components is {exvar:.3f} %')
 
     return features_all
