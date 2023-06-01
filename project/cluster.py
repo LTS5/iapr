@@ -103,13 +103,17 @@ def _merge_clusters(cluster_centers, dist_thres, max_merged, min_clusters):
     merged_centers = []
 
     for id, center in enumerate(cluster_centers):
-        if len(merged_centers) >= max_merged:
+        # Check if max amount of merges per iteration is reached
+        if len(merged_centers)/2 >= max_merged:
             break
+        # Check if the minimal amount of centers are reached
         if new_cluster_centers.shape[0] <=min_clusters:
             break
+
         # Check if center already merged
         if id in merged_centers:
             continue
+
         # Calculate distance to all other centers
         center_dists = _compute_distance(cluster_centers,center.reshape(1,-1))
         # 'Remove' the distance to itself
@@ -120,14 +124,24 @@ def _merge_clusters(cluster_centers, dist_thres, max_merged, min_clusters):
             # Distance suffiecently large
             continue
 
-        # Replace the two close centers with a new center as the mean of the two
         center_close_id = np.argmin(center_dists)
+        # Check if this center is already merged
+        if center_close_id in merged_centers:
+            continue
+
+        # Add both centers to the merged list
+        merged_centers.append(id)
         merged_centers.append(center_close_id)
+
+        # Replace the two close centers with a new center as the mean of the two
         center_close = cluster_centers[center_close_id]
         center_mean = (center_close + center)/2
         new_cluster_centers = np.append(new_cluster_centers, center_mean.reshape(1,-1), axis=0)
-        new_cluster_centers = np.delete(new_cluster_centers,np.where(new_cluster_centers == center_close.reshape(1,-1)), 0)
-        new_cluster_centers = np.delete(new_cluster_centers,np.where(new_cluster_centers == center.reshape(1,-1)), 0)
+        # Get these centers id in the new center list
+
+    # Remove all merged centers
+    keep_inicies = [i for i in range(new_cluster_centers.shape[0]) if i not in merged_centers]
+    new_cluster_centers = new_cluster_centers[keep_inicies]
 
     return new_cluster_centers
 
@@ -205,7 +219,7 @@ def _compute_centers(K,data,cluster_assignments):
     return centers
 
 
-def Kmeans_ISODATA(data, K_init, std_thres, dist_thres, max_iter = 100, max_merged = 2, min_clusters = 3, max_splits = 2):
+def Kmeans_ISODATA(data, K_init, std_thres, dist_thres, max_iter = 100, max_merged = 2, min_clusters = 3, max_splits = 2, verbose= False):
     """
     K-means ISODATA algorithm for unsupervised clustering.
 
@@ -285,30 +299,117 @@ def Kmeans_ISODATA(data, K_init, std_thres, dist_thres, max_iter = 100, max_merg
     cluster_centers = _compute_centers(K, data,cluster_assignments)
 
     # For diagnosing which thresholds to use as hyperparameters of the algorithm
-    for id, center in enumerate(cluster_centers):
-        print(f'Final center: {id}')
-        # Calculate distance to all other centers
-        center_dists = _compute_distance(cluster_centers,center.reshape(1,-1))
-        # 'Remove' the distance to itself
-        center_dists[center_dists == 0] = 1000.0
+    if verbose:
+        for id, center in enumerate(cluster_centers):
+            print(f'Final center: {id}')
+            # Calculate distance to all other centers
+            center_dists = _compute_distance(cluster_centers,center.reshape(1,-1))
+            # 'Remove' the distance to itself
+            center_dists[center_dists == 0] = 1000.0
 
-        print(f'Final centers closest distance to another center: {np.min(center_dists)}')
+            print(f'Final centers closest distance to another center: {np.min(center_dists)}')
 
-        # Get all datapoints belonging to the cluster
-        mask = cluster_assignments == id
-        points = data[mask]
-        N = points.shape[0]
+            # Get all datapoints belonging to the cluster
+            mask = cluster_assignments == id
+            points = data[mask]
+            N = points.shape[0]
 
-        # Calculate the standard deviation
-        dist = abs(points - center)**2
-        std = np.sqrt(dist.sum()/N)
+            # Calculate the standard deviation
+            dist = abs(points - center)**2
+            std = np.sqrt(dist.sum()/N)
 
-        print(f'Final cluster standard deviation: {std}')
+            print(f'Final cluster standard deviation: {std}')
 
     return cluster_assignments, cluster_centers
 
+def arrange_pieces(puzzle_pieces, pieces_assignments):
+    """
+    Arrange the puzzle images according to their cluster assignment.
+
+    Parameters:
+    puzzle_pieces: (list) of piece images
+    pieces_assignments: (N) array of the image assignments
+
+    Output:
+    arranged_puzzles: list of list of arranged puzzles images
+    outliers: list of outlier images
+    """
+    arranged_puzzles = []
+    outliers = []
+
+    for cluster in range(np.max(pieces_assignments) + 1):
+        ids = pieces_assignments == cluster
+        pieces = np.array(puzzle_pieces)[ids]
+        pieces_list = []
+        [pieces_list.append(image) for image in pieces]
+        if len(pieces_list) >= 9:
+            arranged_puzzles.append(pieces_list)
+        else:
+            outliers.extend(pieces_list)
+
+    return arranged_puzzles, outliers
 
 
+if __name__ == '__main__':
 
+    import matplotlib.pyplot as plt
+    from sklearn.datasets import make_blobs
+
+    # Create test dataset
+    X, _ = make_blobs(
+    n_samples=150, n_features=2,
+    centers=5, cluster_std=0.5,
+    shuffle=True
+    )
+
+    # plot of data
+    plt.scatter(
+    X[:, 0], X[:, 1],
+    c='white', marker='o',
+    edgecolor='black', s=50,
+    label='Data'
+    )
+    plt.show()
+
+    # Hyperparameters for the K-means ISODATA algorithm
+    # Initial number of clusters
+    K_init = 10
+    # Threshold for standard deviation, if a clusters standard deviation is higher than this value, we split the cluster
+    std_thres = 1.2
+
+    # Threshold for distance between cluster centers, if the distance is lower than this value, we merge these centers
+    dist_thres = 1.5
+
+    # Max iteration of K-means to converge
+    max_iter = 200
+    # Maximum amount of merges per iteration, useful for bad initialization when the model does not converge
+    max_merged = 2
+    # Minimum amount of cluster centers of the algorithm
+    min_clusters = 3
+    # maximum amount of cluster splits per iteration
+    max_splits = 2
+
+    cluster_assignments, centers = Kmeans_ISODATA(X ,K_init, std_thres, dist_thres, max_iter, max_merged, min_clusters, max_splits)
+
+    print(f'Shape of final centers and assignments: {centers.shape}, {cluster_assignments.shape}')
+
+    # Plot the centers with their attributed data
+    for id, _ in enumerate(centers):
+        data = X[cluster_assignments == id]
+        plt.scatter(
+        data[:, 0], data[:, 1],
+        marker='o',
+        edgecolor='black', s=50,
+        label='Center: ' + str(id)
+    )
+        
+    plt.scatter(
+    centers[:, 0], centers[:, 1],
+    c='blue', marker='*',
+    edgecolor='black', s=50,
+    label='Centers'
+    )
+    plt.legend()
+    plt.show()
 
 
