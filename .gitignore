@@ -267,3 +267,8 @@ project/ignore
 project/git.txt
 project/__pycache__
 project/segmentation_data
+
+Project_guidelines.pdf
+
+tutorial/
+labs/

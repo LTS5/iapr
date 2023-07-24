@@ -425,8 +425,9 @@ if __name__ == '__main__':
     # print(np.array(num_pieces) - answers)
 
     # Test one image
-    test_image = load_input_image(2)
-    puzzle_boxes = find_puzzle_pieces(test_image, plot_results=False, plot_intermediate=False)
+    test_image = load_input_image(10)
+    segment_by_hist(test_image, plot_segmentation=True)
+    puzzle_boxes = find_puzzle_pieces(test_image, plot_results=True, plot_intermediate=True)
 
     # assign = np.array([np.random.randint(0,5) for _ in range(puzzle_boxes.shape[0])])
     # assign = np.array([np.random.randint(0,5) for _ in range(puzzle_boxes.shape[0])])

@@ -43,6 +43,9 @@ def solve_jigsaw_puzzle(puzzle_pieces, puzzle_assignments):
                 solved = concat_images(cluster_pieces, (4,4), idxs)
             else:
                 print(f'Wrong number of puzzle pieces: {len(cluster_pieces)}')
+
+                for piece in cluster_pieces:
+                    outlier_images.append(piece)
         
             print('Solved random')
 
