@@ -1,0 +1,10 @@
+
+OUTPUTS:
+	One per Image:
+		- mask_0i.png
+		- cluster_images_0i.png
+		- feature_map_0i.png
+	Several per Image:
+		- solved_puzzle_0i_00.png
+		- solved_puzzle_0i_01.png
+		- ...
